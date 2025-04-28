@@ -41,8 +41,8 @@ MyRobot::MyRobot() {
     _spher_cam->enable(TIME_STEP);
 
     // Initialize odometry
-    _sl = encoder_tics_to_meters(_left_wheel_sensor->getValue());
-    _sr = encoder_tics_to_meters(_right_wheel_sensor->getValue());
+    _sl = 0.0;
+    _sr = 0.0;
 
     // Initialize position and orientation
     _x = 0.0;
@@ -64,8 +64,8 @@ MyRobot::~MyRobot() {
 
 void MyRobot::run() {
     while (step(TIME_STEP) != -1) {
-        compute_odometry(true);
-        print_odometry();
+        this->compute_odometry(true);
+        this->print_odometry();
         if (goal_reached()) {
             if (_active_point < _total_points - 1) {
                 _active_point++;
@@ -144,13 +144,14 @@ void MyRobot::go_route() {
 
 void MyRobot::compute_odometry(bool use_compass) {
     // Get wheel displacements
-    float new_sl = encoder_tics_to_meters(_left_wheel_sensor->getValue());
-    float new_sr = encoder_tics_to_meters(_right_wheel_sensor->getValue());
+    float new_sl = encoder_tics_to_meters(this->_left_wheel_sensor->getValue());
+    float new_sr = encoder_tics_to_meters(this->_right_wheel_sensor->getValue());
     float diff_sl = new_sl - _sl;
     float diff_sr = new_sr - _sr;
     _sl = new_sl;
     _sr = new_sr;
-
+    
+   
     // Update position
     _x = _x + ((diff_sr + diff_sl) / 2 * cos(_theta + (diff_sr - diff_sl)/(2 * WHEELS_DISTANCE)));
     _y = _y + ((diff_sr + diff_sl) / 2 * sin(_theta + (diff_sr - diff_sl)/(2 * WHEELS_DISTANCE)));
