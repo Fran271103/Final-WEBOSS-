@@ -53,7 +53,11 @@ MyRobot::MyRobot() {
     _x_goal = _path_goal[_active_point][0];
     _y_goal = _path_goal[_active_point][1];
     _theta_goal = atan2(_y_goal - _y, _x_goal - _x);
-
+  
+  
+    std::cout << "Goals: x: " << _x_goal << ", y: " << _y_goal << ", theta: " << convert_rad_to_deg(_theta_goal) << std::endl;
+    
+    
     // Initialize mode for Bug2
     _mode = 0; // Start in go-to-goal mode
 }
@@ -63,9 +67,12 @@ MyRobot::~MyRobot() {
 }
 
 void MyRobot::run() {
+    int s = 0;
     while (step(TIME_STEP) != -1) {
         this->compute_odometry(true);
         this->print_odometry();
+        s += goal_reached();
+        std::cout << "goal reached: " << s << std::endl;
         if (goal_reached()) {
             if (_active_point < _total_points - 1) {
                 _active_point++;
@@ -92,11 +99,12 @@ void MyRobot::go_route() {
     if (_mode == 0) {
         // Check for obstacles
         bool obstacle_ahead = false;
-        if (_distance_sensor[14]->getValue() < 0.1 || // Left-front
-            _distance_sensor[15]->getValue() < 0.1 || // Front-left
-            _distance_sensor[0]->getValue() < 0.1 ||  // Front
-            _distance_sensor[1]->getValue() < 0.1 ||  // Front-right
-            _distance_sensor[2]->getValue() < 0.1) {  // Right-front
+        if (_distance_sensor[14]->getValue() > 0.5 || // Left-front
+            _distance_sensor[15]->getValue() > 0.5 || // Front-left
+            _distance_sensor[0]->getValue() > 0.5 ||  // Front
+            _distance_sensor[1]->getValue() > 0.5 ||  // Front-right
+            _distance_sensor[2]->getValue() > 0.5) {  // Right-front
+            std::cout << "ds: 14: " << _distance_sensor[14]->getValue() << ", 15: " << _distance_sensor[15]->getValue() << ", 0: " << _distance_sensor[0]->getValue() << ", 1: " << _distance_sensor[1]->getValue() << ", 2: " << _distance_sensor[2]->getValue() << std::endl;
             obstacle_ahead = true;
         }
 
@@ -105,14 +113,17 @@ void MyRobot::go_route() {
             float angle_diff = compute_angle_goal();
             if (fabs(angle_diff) > DEGREE_TOLERANCE * M_PI / 180.0) {
                 head_goal();
+                std::cout << "Align towards goal" << std::endl;
             } else {
                 move_forward();
+                std::cout << "Forwards" << std::endl;
             }
         } else {
             // Switch to wall-following mode
             _mode = 1;
         }
     } else if (_mode == 1) {
+        std::cout << "Wall following" << std::endl;
         // Wall-following mode
         float desired_distance = 0.15; // Desired distance from wall
         float K = 2.0; // Proportional gain

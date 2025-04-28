@@ -48,7 +48,7 @@ private:
     webots::Camera *_spher_cam;
 
     // Path Goal
-    float _path_goal[1][2] = {{16, 0}}; // Single goal at (16, 0)
+    float _path_goal[1][2] = {{0, -17}}; // Single goal at (16, 0)
     int _active_point = 0;
     const int _total_points = 1;
 
